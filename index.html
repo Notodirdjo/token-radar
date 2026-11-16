@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token Launch Radar: pre-token protocols ranked by implied value</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<a class="skip" href="#board">Skip to the board</a>
+<main id="board" aria-busy="true">
+  <header class="top">
+    <div class="brand"><span class="mark" aria-hidden="true"></span><span class="brand-name">Token Launch Radar</span></div>
+    <div class="top-meta"><span id="meta-date"></span><span>DefiLlama protocol index</span><span id="meta-model"></span></div>
+  </header>
+
+  <section class="lede">
+    <div>
+      <h1 id="headline"></h1>
+      <p>The watchlist is the floor: every protocol with at least $50M of TVL and no token on record.
+      The early radar adds every launch candidate below that floor. Implied value is a valuation from
+      live comps, not a promise and not a prediction that a token will launch.</p>
+    </div>
+    <div class="facts">
+      <div class="fact"><span>Watchlist covered</span><b id="fact-watch"></b></div>
+      <div class="fact"><span>Pre-token rows scored</span><b id="fact-board"></b></div>
+      <div class="fact"><span>Early rows below the floor</span><b id="fact-early"></b></div>
+      <div class="fact"><span>Live comps priced</span><b id="fact-live"></b></div>
+    </div>
+  </section>
+
+  <div class="controls">
+    <div class="field"><label for="q">Search</label><input type="search" id="q" placeholder="Search name, category or chain" aria-label="Search the board"></div>
+    <div class="field"><label for="category">Category</label><select id="category" aria-label="Filter by category"><option value="all">All categories</option></select></div>
+    <div class="field"><label for="chain">Chain</label><select id="chain" aria-label="Filter by chain"><option value="all">All chains</option></select></div>
+    <div class="field"><label for="min-tvl">Min TVL</label><select id="min-tvl" aria-label="Filter by minimum TVL">
+      <option value="0">Any TVL</option><option value="5000000">$5M+</option><option value="50000000">$50M+ (watchlist floor)</option><option value="500000000">$500M+</option>
+    </select></div>
+    <div class="field check"><label><input type="checkbox" id="watchlist-only"> Watchlist only</label></div>
+    <div class="field"><span class="sub">View</span><div class="tabs" role="tablist">
+      <button type="button" data-tab="board" aria-pressed="true">Board</button>
+      <button type="button" data-tab="live" aria-pressed="false">Live comps</button>
+      <button type="button" data-tab="multiples" aria-pressed="false">Multiples</button>
+      <button type="button" data-tab="sandbox" aria-pressed="false">Model sandbox</button>
+    </div></div>
+    <span class="count" id="count"></span>
+  </div>
+
+  <div class="panel" id="board-panel">
+    <div class="table-wrap"><table id="board-table">
+      <caption class="sub">Pre-token protocols, strongest implied value first. Select a row for its model breakdown and farm plan.</caption>
+      <thead><tr>
+        <th scope="col">Rank</th>
+        <th scope="col"><button type="button" data-sort="name">Protocol</button></th>
+        <th scope="col"><button type="button" data-sort="tvl">TVL</button></th>
+        <th scope="col"><button type="button" data-sort="growth">7d</button></th>
+        <th scope="col"><button type="button" data-sort="age">Age</button></th>
+        <th scope="col"><button type="button" data-sort="multiple">Multiple</button></th>
+        <th scope="col"><button type="button" data-sort="implied">Implied value</button></th>
+        <th scope="col">Token</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <div class="empty" id="board-empty" hidden>
+      <h2>No protocol matches that filter</h2>
+      <p>Clear the search or pick another category to see the board again.</p>
+      <button class="button primary" type="button" id="clear-filters">Clear filters</button>
+    </div>
+  </div>
+
+  <div class="panel" id="live-panel" hidden>
+    <div class="table-wrap"><table id="live-table">
+      <caption class="sub">Token live: these protocols already trade, so their market cap is a fact, not a model. They are set aside from the pre-token ranking — and they are the comps the multiples come from.</caption>
+      <thead><tr><th scope="col">Status</th><th scope="col">Protocol</th><th scope="col">TVL</th><th scope="col">7d</th><th scope="col">Market cap</th><th scope="col">mcap / TVL</th><th scope="col">Token</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+
+  <div class="panel" id="multiples-panel" hidden>
+    <h2>Category multiples, from the snapshot's live tokens</h2>
+    <p class="sub">Each multiple is the median market-cap-to-TVL ratio of the live-token protocols in that
+    category. Categories with fewer than 3 live comps use the global median instead, so a lone
+    outlier cannot set a category's multiple. Every multiple is capped at 2.0.</p>
+    <div class="table-wrap"><table id="multiples-table">
+      <thead><tr><th scope="col">Category</th><th scope="col">Live comps</th><th scope="col">Median mcap / TVL</th><th scope="col">Multiple used</th><th scope="col">Notes</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+
+  <div class="panel" id="sandbox-panel" hidden>
+    <h2>Model sandbox</h2>
+    <p class="sub">Change the model's constants and the board re-ranks in front of you, from the same
+    snapshot figures. The submitted board always uses the stated constants; this is how a reader checks
+    what the model is sensitive to.</p>
+    <div class="sandbox-controls">
+      <div class="field"><label for="sb-growth">Growth weight <b id="sb-growth-val"></b></label><input type="range" id="sb-growth" min="0" max="1" step="0.05" value="0.5"></div>
+      <div class="field"><label for="sb-maturity">Maturity range <b id="sb-maturity-val"></b></label><input type="range" id="sb-maturity" min="0" max="0.8" step="0.05" value="0.4"></div>
+      <div class="field"><label for="sb-cap">Multiple cap <b id="sb-cap-val"></b></label><input type="range" id="sb-cap" min="0.5" max="3" step="0.1" value="2"></div>
+      <button class="button" type="button" id="sb-reset">Reset to radar-2</button>
+    </div>
+    <div class="table-wrap"><table id="sandbox-table">
+      <caption class="sub">Top 10 under your constants, re-ranked live.</caption>
+      <thead><tr><th scope="col">Rank</th><th scope="col">Protocol</th><th scope="col">TVL</th><th scope="col">Multiple</th><th scope="col">Implied value</th><th scope="col">Was</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+
+  <section class="panel model-strip" id="model-strip">
+    <h2>How implied value is computed</h2>
+    <p class="sub">One function scores every protocol. The multiple is the category's median
+    market-cap-to-TVL ratio among live-token protocols in this same snapshot; categories with fewer
+    than 3 live comps use the global median instead. No protocol name is special-cased.</p>
+    <div class="formula" id="formula"></div>
+    <div class="mult-wrap"><table class="mult" id="mult-table">
+      <caption class="sub">Category multiples, from the snapshot's live tokens. Full table under the Multiples tab.</caption>
+      <thead><tr><th scope="col">Category</th><th scope="col">Live comps</th><th scope="col">Median mcap / TVL</th><th scope="col">Multiple used</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </section>
+
+  <footer class="foot">
+    <p>Method: the board ranks protocols that record no token, by an implied value built from their own
+    TVL, seven-day growth and age, priced at their category's live-token multiple. Say a protocol
+    records no token, never that it has none: a DefiLlama record can miss a token. Implied value is the
+    entry's own claim, never make.fun's. Data: DefiLlama protocol index, snapshot <span id="foot-date"></span>.</p>
+  </footer>
+</main>
+<dialog class="detail" id="detail" aria-labelledby="detail-title"></dialog>
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
